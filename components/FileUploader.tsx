@@ -108,7 +108,7 @@ export function FileUploader() {
         formData.append('password', password);
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/upload`, {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });

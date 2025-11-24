@@ -40,7 +40,7 @@ export default function ViewPage() {
   useEffect(() => {
     const fetchFileInfo = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/view/${shareId}/info`);
+        const response = await fetch(`/api/view/${shareId}/info`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -92,7 +92,7 @@ export default function ViewPage() {
 
     try {
       // Fetch encrypted file
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/view/${shareId}`, {
+      const response = await fetch(`/api/view/${shareId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: password || undefined }),
