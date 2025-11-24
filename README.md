@@ -24,7 +24,7 @@ Share files anonymously with military-grade encryption. Files are encrypted clie
 
 ---
 
-## 🚀 Deploy to Render.com (Monorepo)
+## 🚀 Deploy to Render.com (Single Service - FREE TIER)
 
 ### Prerequisites
 - GitHub account with repo: `https://github.com/Derric01/FilePushedQr.git`
@@ -35,21 +35,24 @@ Share files anonymously with military-grade encryption. Files are encrypted clie
 1. Create free PostgreSQL database at [Neon.tech](https://neon.tech)
 2. Copy connection string: `postgresql://user:pass@host/db?sslmode=require`
 
-### Step 2: Deploy Backend API
+### Step 2: Deploy on Render (Single Service)
 1. Go to [Render Dashboard](https://dashboard.render.com)
 2. Click **New +** → **Web Service**
-3. Connect GitHub repo
+3. Connect GitHub repo: `Derric01/FilePushedQr`
 4. Configure:
    ```
-   Name: filepushedqr-api
-   Build: npm install && npm run build:backend && npx prisma generate && npx prisma migrate deploy
-   Start: npm start
+   Name: filepushedqr
+   Language: Node
+   Branch: main
+   Build Command: npm install && next build && tsc -p backend/tsconfig.json && npx prisma generate && npx prisma migrate deploy
+   Start Command: node backend/dist/server.js
    ```
-5. Add environment variables:
+
+5. **Add Environment Variables:**
    ```env
-   DATABASE_URL=postgresql://your-neon-url
+   DATABASE_URL=postgresql://neondb_owner:npg_xxx@ep-xxx.neon.tech/neondb?sslmode=require
    STORAGE_TYPE=local
-   LOCAL_STORAGE_PATH=/opt/render/project/uploads
+   LOCAL_STORAGE_PATH=./uploads
    NODE_ENV=production
    PORT=10000
    MAX_FILE_SIZE_MB=500
@@ -57,35 +60,48 @@ Share files anonymously with military-grade encryption. Files are encrypted clie
    RATE_LIMIT_WINDOW_MS=900000
    RATE_LIMIT_MAX_REQUESTS=100
    LOG_LEVEL=info
-   FRONTEND_URL=https://your-frontend.onrender.com
    ```
-6. Add **Persistent Disk**: Name=`uploads`, Path=`/opt/render/project/uploads`, Size=1GB
-7. Deploy → Copy backend URL
 
-### Step 3: Deploy Frontend
-1. Click **New +** → **Web Service** → Same repo
-2. Configure:
-   ```
-   Name: filepushedqr-web
-   Build: npm install && npm run build:frontend
-   Start: npm start -- -p $PORT
-   ```
-3. Add environment variables:
+6. Select **Instance Type: Free**
+
+7. Click **"Deploy Web Service"**
+
+### Step 3: Test Your Deployment
+- Visit: `https://filepushedqr.onrender.com`
+- Health check: `https://filepushedqr.onrender.com/api/health`
+- Upload a file, get QR code, test download
+
+---
+
+## ⚠️ Important Notes for FREE TIER
+
+### File Storage Limitations
+**Files are NOT persistent on free tier!** 
+
+- ❌ Uploaded files **delete on every restart**
+- ❌ Service spins down after **15 minutes** of inactivity
+- ❌ Files lost on **every redeploy**
+- ✅ Perfect for **demo/testing purposes**
+
+**Why?** Free tier doesn't support persistent disks. Files are stored in ephemeral filesystem at `./uploads` which is wiped on restart.
+
+### Production Deployment (Persistent Storage)
+For production with file persistence, upgrade to **Starter plan ($7/month)**:
+1. Select **Instance Type: Starter** instead of Free
+2. Add **Persistent Disk**:
+   - Name: `uploads`
+   - Mount Path: `/opt/render/project/uploads`
+   - Size: 1 GB
+3. Update environment variable:
    ```env
-   NODE_ENV=production
-   NEXT_PUBLIC_API_URL=https://filepushedqr-api.onrender.com
+   LOCAL_STORAGE_PATH=/opt/render/project/uploads
    ```
-4. Deploy → Copy frontend URL
 
-### Step 4: Update Backend CORS
-1. Go to backend → Environment
-2. Update `FRONTEND_URL` with frontend URL
-3. Redeploy
-
-### Step 5: Test
-- Health: `https://your-backend.onrender.com/api/health`
-- Upload a file and scan QR code
-- Files auto-delete 30 mins after expiration
+### Auto-Deletion Still Works
+Files still auto-delete after expiration (cleanup runs every 30 mins), but on free tier they'll also be lost on:
+- Service spin-down (15 min inactivity)
+- Redeployments
+- Service restarts
 
 ---
 
