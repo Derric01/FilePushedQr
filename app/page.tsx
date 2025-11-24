@@ -36,18 +36,18 @@ export default function Home() {
       <Header />
       
       <main>
-        <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 py-8 sm:py-12 md:py-20 max-w-7xl">
           {/* Hero Section */}
-          <div className="text-center space-y-10 mb-20 animate-fade-in">
+          <div className="text-center space-y-6 sm:space-y-10 mb-12 sm:mb-20 animate-fade-in">
             {/* Chain link badge */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl glass-dark neon-border animate-pulse-glow">
-              <Link2 className="w-5 h-5 text-cyan-400 animate-pulse" />
-              <Shield className="w-5 h-5 text-cyan-400 animate-pulse animation-delay-1000" />
-              <span className="text-sm font-bold text-cyan-400 tracking-wider uppercase">Zero-Knowledge Security Chain</span>
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl glass-dark neon-border animate-pulse-glow">
+              <Link2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-pulse" />
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-pulse animation-delay-1000" />
+              <span className="text-xs sm:text-sm font-bold text-cyan-400 tracking-wider uppercase">Zero-Knowledge Security</span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-black tracking-tight">
-              <span className="block text-white neon-text mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tight px-2">
+              <span className="block text-white neon-text mb-2 sm:mb-4">
                 SECURE FILE
               </span>
               <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">
@@ -55,27 +55,27 @@ export default function Home() {
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
+            <p className="text-base sm:text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light px-4">
               Military-grade encryption. <span className="text-cyan-400 font-semibold">Anonymous</span>. <span className="text-cyan-400 font-semibold">Untraceable</span>. <span className="text-cyan-400 font-semibold">Unbreakable</span>.
-              <span className="block mt-4 text-base text-slate-400 border-l-2 border-cyan-500 pl-4 ml-4">No registration • No tracking • Complete privacy</span>
+              <span className="block mt-3 sm:mt-4 text-sm sm:text-base text-slate-400 border-l-2 border-cyan-500 pl-3 sm:pl-4 ml-0 sm:ml-4">No registration • No tracking • Complete privacy</span>
             </p>
 
             {/* Stats with chain design */}
-            <div className="flex flex-wrap justify-center gap-6 pt-12">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-6 sm:pt-12 px-2">
               {[
                 { icon: Zap, label: "500MB", sublabel: "Max Transfer", color: "cyan" },
                 { icon: Lock, label: "AES-256", sublabel: "Encryption", color: "blue" },
                 { icon: Clock, label: "7 Days", sublabel: "Retention", color: "indigo" }
               ].map((stat, i) => (
                 <div key={i} className={`group relative animate-fade-in ${i === 1 ? 'animation-delay-1000' : i === 2 ? 'animation-delay-2000' : ''}`}>
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all animate-pulse-glow" />
-                  <div className="relative flex items-center gap-4 px-6 py-4 glass-dark neon-border rounded-2xl transform hover:scale-105 hover:-translate-y-2 transition-all">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30">
-                      <stat.icon className="w-6 h-6 text-cyan-400" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl sm:rounded-2xl blur-xl group-hover:blur-2xl transition-all animate-pulse-glow" />
+                  <div className="relative flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 glass-dark neon-border rounded-xl sm:rounded-2xl transform hover:scale-105 hover:-translate-y-2 transition-all">
+                    <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30">
+                      <stat.icon className="w-4 h-4 sm:w-6 sm:h-6 text-cyan-400" />
                     </div>
                     <div className="text-left">
-                      <div className="text-2xl font-black text-white">{stat.label}</div>
-                      <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">{stat.sublabel}</div>
+                      <div className="text-lg sm:text-2xl font-black text-white">{stat.label}</div>
+                      <div className="text-[10px] sm:text-xs text-slate-400 font-medium uppercase tracking-wider">{stat.sublabel}</div>
                     </div>
                   </div>
                 </div>

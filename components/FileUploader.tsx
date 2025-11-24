@@ -160,14 +160,14 @@ export function FileUploader() {
       <div className="absolute inset-0 chain-bg opacity-20 pointer-events-none animate-chain" />
       
       {/* Neon accent borders with animation */}
-      <div className="absolute top-0 left-0 w-32 h-32 border-t-2 border-l-2 border-cyan-500/30 rounded-tl-3xl animate-pulse-glow" />
-      <div className="absolute bottom-0 right-0 w-32 h-32 border-b-2 border-r-2 border-cyan-500/30 rounded-br-3xl animate-pulse-glow animation-delay-1000" />
+      <div className="absolute top-0 left-0 w-16 sm:w-32 h-16 sm:h-32 border-t-2 border-l-2 border-cyan-500/30 rounded-tl-2xl sm:rounded-tl-3xl animate-pulse-glow" />
+      <div className="absolute bottom-0 right-0 w-16 sm:w-32 h-16 sm:h-32 border-b-2 border-r-2 border-cyan-500/30 rounded-br-2xl sm:rounded-br-3xl animate-pulse-glow animation-delay-1000" />
       
-      <div className="relative p-8 md:p-10">
+      <div className="relative p-4 sm:p-8 md:p-10">
         {/* Dropzone */}
         <div
           {...getRootProps()}
-          className={`group relative border-2 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all duration-300
+          className={`group relative border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 min-h-[200px] sm:min-h-[250px] flex items-center justify-center
             ${isDragActive ? 'border-cyan-400 bg-cyan-500/10 neon-border scale-[1.02]' : 'border-slate-600 hover:border-cyan-500/50'}
             ${uploading ? 'pointer-events-none opacity-50' : ''}
             ${file ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
@@ -175,20 +175,20 @@ export function FileUploader() {
           <input {...getInputProps()} />
           
           {file ? (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-4 sm:space-y-6 animate-fade-in w-full">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-2xl animate-pulse" />
-                <div className="relative p-6 glass-dark rounded-full border-2 border-cyan-500/30">
-                  <FileIcon className="mx-auto h-16 w-16 text-cyan-400" />
+                <div className="relative p-4 sm:p-6 glass-dark rounded-full border-2 border-cyan-500/30">
+                  <FileIcon className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-cyan-400" />
                 </div>
               </div>
-              <div>
-                <p className="font-black text-2xl text-white mb-2">{file.name}</p>
-                <div className="flex items-center justify-center gap-3 text-sm">
-                  <span className="px-3 py-1 glass-dark rounded-lg text-cyan-400 font-mono">
+              <div className="px-2">
+                <p className="font-black text-lg sm:text-2xl text-white mb-2 break-all">{file.name}</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                  <span className="px-2 sm:px-3 py-1 glass-dark rounded-lg text-cyan-400 font-mono">
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </span>
-                  <span className="px-3 py-1 glass-dark rounded-lg text-slate-400 font-mono">
+                  <span className="px-2 sm:px-3 py-1 glass-dark rounded-lg text-slate-400 font-mono truncate max-w-[200px]">
                     {file.type || 'Unknown'}
                   </span>
                 </div>
@@ -198,28 +198,28 @@ export function FileUploader() {
                   variant="outline" 
                   size="sm" 
                   onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500"
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 min-h-[44px]"
                 >
                   Remove File
                 </Button>
               )}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6 w-full">
               <div className="relative inline-block">
                 <div className={`absolute inset-0 bg-cyan-500/20 rounded-full blur-3xl transition-opacity ${isDragActive ? 'opacity-60 animate-pulse' : 'opacity-30'}`} />
-                <div className="relative p-6 glass-dark rounded-full border-2 border-cyan-500/30 group-hover:border-cyan-500/50 transition-colors">
-                  <Upload className={`mx-auto h-16 w-16 text-slate-400 transition-all duration-300 ${isDragActive ? 'scale-110 text-cyan-400' : 'group-hover:scale-105 group-hover:text-cyan-400'}`} />
+                <div className="relative p-4 sm:p-6 glass-dark rounded-full border-2 border-cyan-500/30 group-hover:border-cyan-500/50 transition-colors">
+                  <Upload className={`mx-auto h-12 w-12 sm:h-16 sm:w-16 text-slate-400 transition-all duration-300 ${isDragActive ? 'scale-110 text-cyan-400' : 'group-hover:scale-105 group-hover:text-cyan-400'}`} />
                 </div>
               </div>
-              <div>
-                <p className="text-2xl font-black text-white mb-2">
+              <div className="px-4">
+                <p className="text-xl sm:text-2xl font-black text-white mb-2">
                   {isDragActive ? 'DROP FILE HERE' : 'UPLOAD FILE'}
                 </p>
-                <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
                   <span className="text-cyan-400 font-semibold">Drag & drop</span> or <span className="text-cyan-400 font-semibold">click</span> to select
                   <br />
-                  <span className="text-xs opacity-75">All formats • Up to 500MB</span>
+                  <span className="text-[10px] sm:text-xs opacity-75">All formats • Up to 500MB</span>
                 </p>
               </div>
             </div>
@@ -228,18 +228,18 @@ export function FileUploader() {
 
       {/* Upload Options */}
       {file && !uploading && (
-        <div className="mt-8 space-y-6">
+        <div className="mt-6 sm:mt-8 space-y-5 sm:space-y-6">
           {/* Expiry */}
           <div className="space-y-3">
-            <Label className="text-sm font-bold text-white uppercase tracking-wide">Auto-Delete Timer</Label>
-            <div className="flex gap-2 flex-wrap">
+            <Label className="text-xs sm:text-sm font-bold text-white uppercase tracking-wide">Auto-Delete Timer</Label>
+            <div className="grid grid-cols-3 sm:flex gap-2 flex-wrap">
               {[1, 6, 12, 24, 72, 120].map((hours) => (
                 <Button
                   key={hours}
                   variant={expiryHours === hours ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setExpiryHours(hours)}
-                  className={expiryHours === hours ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300 font-mono' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400 font-mono'}
+                  className={`min-h-[44px] text-sm sm:text-base ${expiryHours === hours ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300 font-mono' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400 font-mono'}`}
                 >
                   {hours < 24 ? `${hours}h` : `${hours / 24}d`}
                 </Button>
@@ -248,14 +248,14 @@ export function FileUploader() {
           </div>
 
           {/* Password Protection */}
-          <div className="relative overflow-hidden space-y-4 p-5 glass-dark rounded-xl border-2 border-slate-700/50">
+          <div className="relative overflow-hidden space-y-4 p-4 sm:p-5 glass-dark rounded-xl border-2 border-slate-700/50">
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 glass-dark rounded-lg border border-cyan-500/30">
-                  <Lock className="h-4 w-4 text-cyan-400" />
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 glass-dark rounded-lg border border-cyan-500/30">
+                  <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400" />
                 </div>
-                <Label htmlFor="password-toggle" className="text-sm font-bold text-white uppercase tracking-wide">Password Lock</Label>
+                <Label htmlFor="password-toggle" className="text-xs sm:text-sm font-bold text-white uppercase tracking-wide">Password Lock</Label>
               </div>
               <Switch
                 id="password-toggle"
@@ -271,26 +271,27 @@ export function FileUploader() {
                 placeholder="Enter secure password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="glass-dark border-2 border-slate-600 focus:border-cyan-500 text-white placeholder:text-slate-500"
+                className="glass-dark border-2 border-slate-600 focus:border-cyan-500 text-white placeholder:text-slate-500 min-h-[44px] text-base"
               />
             )}
           </div>
 
           {/* Upload Button */}
           <Button
-            className="relative w-full glass-dark neon-border border-2 border-cyan-500/50 hover:border-cyan-400 text-cyan-300 hover:text-cyan-200 font-black text-lg uppercase tracking-wider shadow-[0_0_30px_rgba(0,180,255,0.3)] hover:shadow-[0_0_50px_rgba(0,180,255,0.5)] transform hover:scale-[1.02] transition-all duration-300"
+            className="relative w-full glass-dark neon-border border-2 border-cyan-500/50 hover:border-cyan-400 text-cyan-300 hover:text-cyan-200 font-black text-base sm:text-lg uppercase tracking-wider shadow-[0_0_30px_rgba(0,180,255,0.3)] hover:shadow-[0_0_50px_rgba(0,180,255,0.5)] transform hover:scale-[1.02] transition-all duration-300 min-h-[52px] sm:min-h-[56px]"
             size="lg"
             onClick={handleUpload}
             disabled={uploading || (passwordProtected && !password)}
           >
             {uploading ? (
               <>
-                <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                Encrypting & Uploading...
+                <Loader2 className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                <span className="hidden xs:inline">Encrypting & Uploading...</span>
+                <span className="xs:hidden">Uploading...</span>
               </>
             ) : (
               <>
-                <Lock className="mr-3 h-6 w-6" />
+                <Lock className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                 ENCRYPT & UPLOAD
               </>
             )}

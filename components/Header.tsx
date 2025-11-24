@@ -7,33 +7,36 @@ export function Header() {
       {/* Chain pattern background */}
       <div className="absolute inset-0 chain-bg opacity-10 pointer-events-none" />
       
-      <div className="relative container mx-auto px-4 py-5 flex justify-between items-center">
-        <Link href="/" className="group flex items-center gap-3 font-bold text-xl transform hover:scale-105 transition-all duration-300">
+      <div className="relative container mx-auto px-3 sm:px-4 py-3 sm:py-5 flex justify-between items-center">
+        <Link href="/" className="group flex items-center gap-2 sm:gap-3 font-bold text-base sm:text-xl transform hover:scale-105 transition-all duration-300">
           <div className="relative">
             <div className="absolute inset-0 bg-cyan-500/30 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-            <div className="relative p-2.5 glass-dark neon-border rounded-lg">
-              <Shield className="h-6 w-6 text-cyan-400" />
+            <div className="relative p-1.5 sm:p-2.5 glass-dark neon-border rounded-lg">
+              <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
             </div>
           </div>
-          <span className="neon-text font-black uppercase tracking-wider text-white">
+          <span className="neon-text font-black uppercase tracking-wider text-white hidden xs:inline">
             FilePushedQR
+          </span>
+          <span className="neon-text font-black uppercase tracking-wider text-white xs:hidden">
+            FPQR
           </span>
         </Link>
 
-        <nav className="flex gap-2">
+        <nav className="flex gap-1 sm:gap-2">
           <Link
             href="/"
-            className="group flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-cyan-400 glass-dark hover:border-cyan-500/50 border border-transparent transition-all"
+            className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-cyan-400 glass-dark hover:border-cyan-500/50 border border-transparent transition-all"
           >
-            <Upload className="h-4 w-4" />
-            <span>Upload</span>
+            <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Upload</span>
           </Link>
           <Link
             href="/about"
-            className="group flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-cyan-400 glass-dark hover:border-cyan-500/50 border border-transparent transition-all"
+            className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide text-slate-300 hover:text-cyan-400 glass-dark hover:border-cyan-500/50 border border-transparent transition-all"
           >
-            <Info className="h-4 w-4" />
-            <span>About</span>
+            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">About</span>
           </Link>
         </nav>
       </div>
