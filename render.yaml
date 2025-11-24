@@ -1,14 +1,13 @@
-# Render Deployment Configuration
+# Render Deployment Configuration - Single Service (Monorepo)
 
 services:
-  # Backend API Server
   - type: web
-    name: filepushedqr-api
+    name: filepushedqr
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install && npm run build:backend && npx prisma generate && npx prisma migrate deploy
-    startCommand: npm start
+    buildCommand: npm install && next build && tsc -p backend/tsconfig.json && npx prisma generate && npx prisma migrate deploy
+    startCommand: node backend/dist/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -21,8 +20,6 @@ services:
         value: /opt/render/project/uploads
       - key: DATABASE_URL
         sync: false
-      - key: FRONTEND_URL
-        sync: false
       - key: MAX_FILE_SIZE_MB
         value: 500
       - key: MAX_EXPIRY_DAYS
@@ -33,21 +30,13 @@ services:
         value: 100
       - key: LOG_LEVEL
         value: info
-    disk:
-      name: uploads
-      mountPath: /opt/render/project/uploads
-      sizeGB: 1
 
-  # Frontend (Next.js)
-  - type: web
-    name: filepushedqr-web
-    env: node
-    region: oregon
-    plan: free
-    buildCommand: npm install && npm run build:frontend
-    startCommand: npm start -- -p $PORT
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
+# Note: Free tier does NOT support persistent disks
+# Files uploaded will be deleted on service restart or spin-down
+# For persistent storage, upgrade to a paid plan or use cloud storage (S3, Azure Blob, etc.)
+
+# Disk configuration (requires paid plan - commented out for free tier)
+# disk:
+#   name: uploads
+#   mountPath: /opt/render/project/uploads
+#   sizeGB: 1
