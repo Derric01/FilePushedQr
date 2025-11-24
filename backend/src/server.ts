@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import multer from 'multer';
 import dotenv from 'dotenv';
+import path from 'path';
 import { logger } from './utils/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiter';
@@ -60,6 +61,13 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../../out');
+  app.use(express.static(frontendPath));
+  logger.info(`📦 Serving static frontend from: ${frontendPath}`);
+}
+
 // API rate limiting
 app.use('/api', apiLimiter);
 
@@ -75,6 +83,13 @@ app.get('/api/health', (req, res) => {
 app.use('/api/upload', upload.single('file'), uploadRoute);
 app.use('/api/view', viewRoute);
 app.use('/api/delete', deleteRoute);
+
+// Serve frontend for all other routes in production (SPA fallback)
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../out/index.html'));
+  });
+}
 
 // Error handling
 app.use(notFoundHandler);
