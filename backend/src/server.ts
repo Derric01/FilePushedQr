@@ -61,17 +61,6 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Serve Next.js static files in production
-if (process.env.NODE_ENV === 'production') {
-  const nextStaticPath = path.join(__dirname, '../../.next/static');
-  const publicPath = path.join(__dirname, '../../public');
-  
-  app.use('/_next/static', express.static(nextStaticPath));
-  app.use('/public', express.static(publicPath));
-  
-  logger.info(`📦 Serving Next.js static files`);
-}
-
 // API rate limiting
 app.use('/api', apiLimiter);
 
@@ -88,23 +77,31 @@ app.use('/api/upload', upload.single('file'), uploadRoute);
 app.use('/api/view', viewRoute);
 app.use('/api/delete', deleteRoute);
 
-// Proxy all other requests to Next.js in production
+// Serve Next.js in production
 if (process.env.NODE_ENV === 'production') {
-  const next = require('next');
+  const nextStaticPath = path.join(__dirname, '../../.next/static');
+  const publicPath = path.join(__dirname, '../../public');
   
-  const nextApp = next({ 
-    dev: false,
-    dir: path.join(__dirname, '../..'),
-  });
-  const handle = nextApp.getRequestHandler();
+  // Serve static assets
+  app.use('/_next/static', express.static(nextStaticPath));
+  app.use('/public', express.static(publicPath));
   
-  nextApp.prepare().then(() => {
-    logger.info('📦 Next.js app ready');
-    
-    app.get('*', (req, res) => {
-      return handle(req, res);
+  // Serve Next.js server pages
+  const serverPath = path.join(__dirname, '../../.next/server');
+  app.use(express.static(serverPath));
+  
+  // Handle all non-API routes with Next.js HTML
+  app.get('*', (req, res) => {
+    const htmlPath = path.join(serverPath, 'app', req.path === '/' ? 'index.html' : `${req.path}.html`);
+    res.sendFile(htmlPath, (err) => {
+      if (err) {
+        // Fallback to index
+        res.sendFile(path.join(serverPath, 'app/index.html'));
+      }
     });
   });
+  
+  logger.info(`📦 Serving Next.js from ${serverPath}`);
 }
 
 // Error handling
