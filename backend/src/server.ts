@@ -93,7 +93,14 @@ app.use('/api/upload', upload.single('file'), uploadRoute);
 app.use('/api/view', viewRoute);
 app.use('/api/delete', deleteRoute);
 
-// Serve Next.js in production
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+// Start server
+const portNum = typeof PORT === 'string' ? parseInt(PORT) : PORT;
+
+// Initialize Next.js in production
 if (process.env.NODE_ENV === 'production') {
   const next = require('next');
   const nextApp = next({ 
@@ -102,36 +109,42 @@ if (process.env.NODE_ENV === 'production') {
   });
   const handle = nextApp.getRequestHandler();
 
+  logger.info('🔄 Preparing Next.js...');
+  
   nextApp.prepare().then(() => {
     logger.info('✅ Next.js ready');
     
     // Handle all non-API routes with Next.js
     app.all('*', (req, res) => {
-      // Skip if already handled by API routes
       if (!res.headersSent) {
         return handle(req, res);
       }
+    });
+    
+    // Start server AFTER Next.js is ready
+    app.listen(portNum, '0.0.0.0', () => {
+      logger.info(`🚀 Server running on port ${portNum}`);
+      logger.info(`📁 Environment: ${process.env.NODE_ENV}`);
+      
+      // Start cleanup job
+      startCleanupJob();
+      logger.info('🧹 Cleanup job scheduled');
     });
   }).catch((err: Error) => {
     logger.error('❌ Next.js preparation failed:', err);
     process.exit(1);
   });
+} else {
+  // Development mode - start server immediately
+  app.listen(portNum, '0.0.0.0', () => {
+    logger.info(`🚀 Backend server running on port ${portNum}`);
+    logger.info(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`🌐 Network access: http://192.168.1.8:${portNum}`);
+    
+    // Start cleanup job
+    startCleanupJob();
+    logger.info('🧹 Cleanup job scheduled');
+  });
 }
-
-// Error handling
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-// Start server
-const portNum = typeof PORT === 'string' ? parseInt(PORT) : PORT;
-app.listen(portNum, '0.0.0.0', () => {
-  logger.info(`🚀 Backend server running on port ${portNum}`);
-  logger.info(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🌐 Network access: http://192.168.1.8:${portNum}`);
-  
-  // Start cleanup job
-  startCleanupJob();
-  logger.info('🧹 Cleanup job scheduled');
-});
 
 export default app;
