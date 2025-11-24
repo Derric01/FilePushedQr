@@ -93,10 +93,6 @@ app.use('/api/upload', upload.single('file'), uploadRoute);
 app.use('/api/view', viewRoute);
 app.use('/api/delete', deleteRoute);
 
-// Error handling
-app.use(notFoundHandler);
-app.use(errorHandler);
-
 // Start server
 const portNum = typeof PORT === 'string' ? parseInt(PORT) : PORT;
 
@@ -121,6 +117,10 @@ if (process.env.NODE_ENV === 'production') {
       }
     });
     
+    // Error handling AFTER Next.js routes
+    app.use(notFoundHandler);
+    app.use(errorHandler);
+    
     // Start server AFTER Next.js is ready
     app.listen(portNum, '0.0.0.0', () => {
       logger.info(`🚀 Server running on port ${portNum}`);
@@ -136,6 +136,9 @@ if (process.env.NODE_ENV === 'production') {
   });
 } else {
   // Development mode - start server immediately
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+  
   app.listen(portNum, '0.0.0.0', () => {
     logger.info(`🚀 Backend server running on port ${portNum}`);
     logger.info(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
