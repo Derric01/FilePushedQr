@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Upload {
+  id              String   @id @default(cuid())
+  
+  // File metadata
+  fileName        String
+  fileType        String   // MIME type
+  fileSize        BigInt   // in bytes
+  encryptedBlob   String   // R2 storage key/path
+  
+  // Security & Access Control
+  shareId         String   @unique // public share identifier
+  ownerToken      String   @unique // hashed token for deletion
+  passwordHash    String?  // Argon2 hash if password protected
+  
+  // Expiration
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  
+  // Analytics (anonymous)
+  viewCount       Int      @default(0)
+  lastViewedAt    DateTime?
+  
+  // Status
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  
+  // Relations
+  accessLogs      AccessLog[]
+  
+  @@index([shareId])
+  @@index([ownerToken])
+  @@index([expiresAt])
+  @@index([isDeleted])
+  @@map("uploads")
+}
+
+model AccessLog {
+  id              String   @id @default(cuid())
+  
+  // Relations
+  uploadId        String
+  upload          Upload   @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  
+  // Anonymous tracking (hashed for privacy)
+  hashedIP        String   // SHA-256 hashed IP
+  userAgent       String?
+  
+  // Event metadata
+  action          String   // VIEW, DOWNLOAD, DELETE
+  success         Boolean  @default(true)
+  errorMessage    String?
+  
+  // Timestamp
+  accessedAt      DateTime @default(now())
+  
+  @@index([uploadId])
+  @@index([accessedAt])
+  @@map("access_logs")
+}
+
+model SystemMetrics {
+  id                    String   @id @default(cuid())
+  
+  // Storage metrics
+  totalUploads          Int      @default(0)
+  totalStorageUsedBytes BigInt   @default(0)
+  activeUploads         Int      @default(0)
+  
+  // Activity metrics
+  totalViews            Int      @default(0)
+  totalDownloads        Int      @default(0)
+  
+  // Cleanup metrics
+  expiredFilesDeleted   Int      @default(0)
+  lastCleanupRun        DateTime?
+  
+  // Snapshot timestamp
+  recordedAt            DateTime @default(now())
+  
+  @@map("system_metrics")
+}

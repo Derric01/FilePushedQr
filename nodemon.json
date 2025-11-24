@@ -1,0 +1,12 @@
+{
+  "watch": ["backend/src"],
+  "ext": "ts,js",
+  "ignore": [
+    "*.test.ts",
+    "*.spec.ts",
+    "node_modules",
+    "uploads",
+    ".env"
+  ],
+  "exec": "ts-node backend/src/server.ts"
+}

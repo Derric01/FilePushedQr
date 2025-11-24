@@ -1,0 +1,53 @@
+# Render Deployment Configuration
+
+services:
+  # Backend API Server
+  - type: web
+    name: filepushedqr-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build:backend && npx prisma generate && npx prisma migrate deploy
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: STORAGE_TYPE
+        value: local
+      - key: LOCAL_STORAGE_PATH
+        value: /opt/render/project/uploads
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: MAX_FILE_SIZE_MB
+        value: 500
+      - key: MAX_EXPIRY_DAYS
+        value: 5
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: LOG_LEVEL
+        value: info
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/uploads
+      sizeGB: 1
+
+  # Frontend (Next.js)
+  - type: web
+    name: filepushedqr-web
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build:frontend
+    startCommand: npm start -- -p $PORT
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
