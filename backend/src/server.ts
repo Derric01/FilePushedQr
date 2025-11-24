@@ -95,29 +95,27 @@ app.use('/api/delete', deleteRoute);
 
 // Serve Next.js in production
 if (process.env.NODE_ENV === 'production') {
-  const nextStaticPath = path.join(__dirname, '../../.next/static');
-  const publicPath = path.join(__dirname, '../../public');
-  
-  // Serve static assets
-  app.use('/_next/static', express.static(nextStaticPath));
-  app.use('/public', express.static(publicPath));
-  
-  // Serve Next.js server pages
-  const serverPath = path.join(__dirname, '../../.next/server');
-  app.use(express.static(serverPath));
-  
-  // Handle all non-API routes with Next.js HTML
-  app.get('*', (req, res) => {
-    const htmlPath = path.join(serverPath, 'app', req.path === '/' ? 'index.html' : `${req.path}.html`);
-    res.sendFile(htmlPath, (err) => {
-      if (err) {
-        // Fallback to index
-        res.sendFile(path.join(serverPath, 'app/index.html'));
+  const next = require('next');
+  const nextApp = next({ 
+    dev: false, 
+    dir: path.join(__dirname, '../..')
+  });
+  const handle = nextApp.getRequestHandler();
+
+  nextApp.prepare().then(() => {
+    logger.info('✅ Next.js ready');
+    
+    // Handle all non-API routes with Next.js
+    app.all('*', (req, res) => {
+      // Skip if already handled by API routes
+      if (!res.headersSent) {
+        return handle(req, res);
       }
     });
+  }).catch((err: Error) => {
+    logger.error('❌ Next.js preparation failed:', err);
+    process.exit(1);
   });
-  
-  logger.info(`📦 Serving Next.js from ${serverPath}`);
 }
 
 // Error handling
