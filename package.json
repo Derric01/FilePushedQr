@@ -9,7 +9,7 @@
     "build": "next build && tsc -p backend/tsconfig.json",
     "build:frontend": "next build",
     "build:backend": "tsc -p backend/tsconfig.json",
-    "start": "node backend/dist/server.js",
+    "start": "NODE_ENV=production node backend/dist/server.js",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

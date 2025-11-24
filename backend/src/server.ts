@@ -61,11 +61,15 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Serve static frontend files in production
+// Serve Next.js static files in production
 if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '../../out');
-  app.use(express.static(frontendPath));
-  logger.info(`📦 Serving static frontend from: ${frontendPath}`);
+  const nextStaticPath = path.join(__dirname, '../../.next/static');
+  const publicPath = path.join(__dirname, '../../public');
+  
+  app.use('/_next/static', express.static(nextStaticPath));
+  app.use('/public', express.static(publicPath));
+  
+  logger.info(`📦 Serving Next.js static files`);
 }
 
 // API rate limiting
@@ -84,10 +88,22 @@ app.use('/api/upload', upload.single('file'), uploadRoute);
 app.use('/api/view', viewRoute);
 app.use('/api/delete', deleteRoute);
 
-// Serve frontend for all other routes in production (SPA fallback)
+// Proxy all other requests to Next.js in production
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../out/index.html'));
+  const next = require('next');
+  
+  const nextApp = next({ 
+    dev: false,
+    dir: path.join(__dirname, '../..'),
+  });
+  const handle = nextApp.getRequestHandler();
+  
+  nextApp.prepare().then(() => {
+    logger.info('📦 Next.js app ready');
+    
+    app.get('*', (req, res) => {
+      return handle(req, res);
+    });
   });
 }
 
