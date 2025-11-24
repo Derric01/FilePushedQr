@@ -19,6 +19,9 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy for Render.com (required for rate limiting and X-Forwarded-For)
+app.set('trust proxy', 1);
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
