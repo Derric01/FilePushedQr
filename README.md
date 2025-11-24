@@ -8,19 +8,6 @@ Share files securely with client-side AES-256-GCM encryption. Zero-knowledge arc
 
 ---
 
-## 📸 Screenshots
-
-### Homepage
-![FilePushedQR Homepage](https://github.com/user-attachments/assets/homepage.png)
-
-### Upload Complete with QR Code
-![Upload Complete](https://github.com/user-attachments/assets/upload-complete.png)
-
-### Features Overview
-![Features](https://github.com/user-attachments/assets/features.png)
-
----
-
 ## ✨ Features
 
 - 🔒 **AES-256-GCM Encryption** - Client-side encryption before upload
@@ -30,7 +17,7 @@ Share files securely with client-side AES-256-GCM encryption. Zero-knowledge arc
 - 🔐 **Password Protection** - Optional Argon2id hashing
 - 📦 **500MB File Support** - PDFs, images, videos, documents
 - 🚫 **No Registration** - Completely anonymous
-- 🎨 **Modern UI** - Dark theme with neon accents
+- 📱 **Mobile Optimized** - Responsive design with touch-friendly UI
 
 ---
 
@@ -57,7 +44,7 @@ Share files securely with client-side AES-256-GCM encryption. Zero-knowledge arc
 ### Deployment
 - **Render.com** (single monorepo service)
 - **Neon.tech** PostgreSQL database
-- **Ephemeral storage** (free tier)
+- **Node.js 22** runtime
 
 ---
 
