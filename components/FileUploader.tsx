@@ -205,14 +205,15 @@ export function FileUploader() {
         </div>
 
         {/* File Upload Mode */}
-        {mode === 'file' && <div
-          {...getRootProps()}
-          className={`group relative border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 min-h-[200px] sm:min-h-[250px] flex items-center justify-center
-            ${isDragActive ? 'border-cyan-400 bg-cyan-500/10 neon-border scale-[1.02]' : 'border-slate-600 hover:border-cyan-500/50'}
-            ${uploading ? 'pointer-events-none opacity-50' : ''}
-            ${file ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
-        >
-          <input {...getInputProps()} />
+        {mode === 'file' && (
+          <div
+            {...getRootProps()}
+            className={`group relative border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 min-h-[200px] sm:min-h-[250px] flex items-center justify-center
+              ${isDragActive ? 'border-cyan-400 bg-cyan-500/10 neon-border scale-[1.02]' : 'border-slate-600 hover:border-cyan-500/50'}
+              ${uploading ? 'pointer-events-none opacity-50' : ''}
+              ${file ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
+          >
+            <input {...getInputProps()} />
           
           {file ? (
             <div className="space-y-4 sm:space-y-6 animate-fade-in w-full">
@@ -264,8 +265,8 @@ export function FileUploader() {
               </div>
             </div>
           )}
-        </div>
-        )
+          </div>
+        )}
 
         {/* Text Mode */}
         {mode === 'text' && (
