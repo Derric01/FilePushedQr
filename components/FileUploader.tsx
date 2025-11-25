@@ -14,8 +14,7 @@ import {
   generateEncryptionKey, 
   exportKey, 
   encryptFile, 
-  combineIVAndData,
-  arrayBufferToBase64 
+  combineIVAndData
 } from '@/lib/crypto';
 import { UploadResult } from './UploadResult';
 
@@ -27,6 +26,10 @@ export function FileUploader() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  
+  // Mode: 'file' or 'text'
+  const [mode, setMode] = useState<'file' | 'text'>('file');
+  const [textContent, setTextContent] = useState('');
   
   // Form state
   const [expiryHours, setExpiryHours] = useState(24);
@@ -60,7 +63,24 @@ export function FileUploader() {
   });
 
   const handleUpload = async () => {
-    if (!file) return;
+    // Convert text to file if in text mode
+    let fileToUpload = file;
+    
+    if (mode === 'text') {
+      if (!textContent.trim()) {
+        toast({
+          title: 'No text entered',
+          description: 'Please enter some text to share',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      fileToUpload = new File([blob], 'shared-text.txt', { type: 'text/plain' });
+    }
+    
+    if (!fileToUpload) return;
 
     if (passwordProtected && !password) {
       toast({
@@ -86,9 +106,8 @@ export function FileUploader() {
         description: 'Your file is being encrypted locally',
       });
 
-      const { encryptedData, iv } = await encryptFile(file, encryptionKey);
+      const { encryptedData, iv } = await encryptFile(fileToUpload, encryptionKey);
       const combined = combineIVAndData(iv, encryptedData);
-      const encryptedBase64 = arrayBufferToBase64(combined.buffer);
       setProgress(50);
 
       // Step 3: Upload to backend
@@ -98,10 +117,10 @@ export function FileUploader() {
       });
 
       const formData = new FormData();
-      formData.append('file', new Blob([combined]), file.name);
-      formData.append('fileName', file.name);
-      formData.append('fileType', file.type || 'application/octet-stream');
-      formData.append('fileSize', file.size.toString());
+      formData.append('file', new Blob([combined]), fileToUpload.name);
+      formData.append('fileName', fileToUpload.name);
+      formData.append('fileType', fileToUpload.type || 'application/octet-stream');
+      formData.append('fileSize', fileToUpload.size.toString());
       formData.append('expiresIn', (expiryHours * 60).toString());
       
       if (passwordProtected && password) {
@@ -136,6 +155,7 @@ export function FileUploader() {
 
       // Reset form
       setFile(null);
+      setTextContent('');
       setPassword('');
     } catch (error) {
       console.error('Upload error:', error);
@@ -164,8 +184,28 @@ export function FileUploader() {
       <div className="absolute bottom-0 right-0 w-16 sm:w-32 h-16 sm:h-32 border-b-2 border-r-2 border-cyan-500/30 rounded-br-2xl sm:rounded-br-3xl animate-pulse-glow animation-delay-1000" />
       
       <div className="relative p-4 sm:p-8 md:p-10">
-        {/* Dropzone */}
-        <div
+        {/* Mode Tabs */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={mode === 'file' ? 'default' : 'outline'}
+            onClick={() => { setMode('file'); setTextContent(''); setFile(null); }}
+            className={`flex-1 min-h-[44px] ${ mode === 'file' ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400'}`}
+          >
+            <FileIcon className="mr-2 h-4 w-4" />
+            Upload File
+          </Button>
+          <Button
+            variant={mode === 'text' ? 'default' : 'outline'}
+            onClick={() => { setMode('text'); setFile(null); }}
+            className={`flex-1 min-h-[44px] ${mode === 'text' ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400'}`}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Share Text
+          </Button>
+        </div>
+
+        {/* File Upload Mode */}
+        {mode === 'file' && <div
           {...getRootProps()}
           className={`group relative border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 min-h-[200px] sm:min-h-[250px] flex items-center justify-center
             ${isDragActive ? 'border-cyan-400 bg-cyan-500/10 neon-border scale-[1.02]' : 'border-slate-600 hover:border-cyan-500/50'}
@@ -225,9 +265,27 @@ export function FileUploader() {
             </div>
           )}
         </div>
+        )
+
+        {/* Text Mode */}
+        {mode === 'text' && (
+          <div className="space-y-4">
+            <textarea
+              placeholder="Paste or type your text here...&#10;&#10;• Share notes, code snippets, or messages&#10;• Military-grade encryption applied automatically&#10;• Set expiration time below"
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              disabled={uploading}
+              className="w-full min-h-[250px] sm:min-h-[300px] p-4 sm:p-6 glass-dark border-2 border-slate-600 focus:border-cyan-500 rounded-xl sm:rounded-2xl text-white placeholder:text-slate-500 resize-y text-sm sm:text-base leading-relaxed font-mono transition-all outline-none"
+              maxLength={10000000}
+            />
+            <p className="text-xs text-slate-400 text-right font-mono">
+              {textContent.length.toLocaleString()} characters
+            </p>
+          </div>
+        )}
 
       {/* Upload Options */}
-      {file && !uploading && (
+      {((file && mode === 'file') || (textContent && mode === 'text')) && !uploading && (
         <div className="mt-6 sm:mt-8 space-y-5 sm:space-y-6">
           {/* Expiry */}
           <div className="space-y-3">
