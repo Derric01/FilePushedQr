@@ -2,7 +2,7 @@
 
 > **Military-grade encryption. Anonymous. Untraceable. Unbreakable.**
 
-Share files securely with client-side AES-256-GCM encryption. Zero-knowledge architecture means your files are encrypted in the browser before upload—the server never sees your data.
+Share files securely with client-side encryption. Zero-knowledge architecture means your files are encrypted in the browser before upload—the server never sees your data.
 
 **🌐 Live Demo:** [https://filepushedqr.onrender.com](https://filepushedqr.onrender.com)
 
@@ -10,12 +10,12 @@ Share files securely with client-side AES-256-GCM encryption. Zero-knowledge arc
 
 ## ✨ Features
 
-- 🔒 **AES-256-GCM Encryption** - Client-side encryption before upload
+- 🔒 **Military-Grade Encryption** - Client-side encryption before upload
 - 🕵️ **Zero-Knowledge** - Server never sees unencrypted data
 - 📱 **QR Code Sharing** - Instant mobile sharing
 - ⏰ **Auto-Destruct** - Files expire after 1-7 days
-- 🔐 **Password Protection** - Optional Argon2id hashing
-- 📦 **500MB File Support** - PDFs, images, videos, documents
+- 🔐 **Password Protection** - Optional password hashing
+- 📦 **500MB File Support** - Text, PDFs, images, videos, all formats
 - 🚫 **No Registration** - Completely anonymous
 - 📱 **Mobile Optimized** - Responsive design with touch-friendly UI
 
@@ -32,11 +32,11 @@ Share files securely with client-side AES-256-GCM encryption. Zero-knowledge arc
 ### Backend
 - **Express** REST API
 - **Prisma ORM** with PostgreSQL
-- **Argon2id** password hashing
+- **Secure password hashing**
 - **node-cron** for automated cleanup
 
 ### Security
-- **AES-256-GCM** encryption
+- **Military-grade encryption**
 - **Helmet** CSP headers
 - **Rate limiting** (100 req/15min)
 - **CORS** protection

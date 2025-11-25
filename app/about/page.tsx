@@ -67,7 +67,7 @@ export default function AboutPage() {
               <Lock className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
               <div>
                 <strong>Client-Side Encryption:</strong> Files are encrypted in your browser 
-                using AES-256-GCM before upload. The server never sees plaintext.
+                using military-grade encryption before upload. The server never sees plaintext.
               </div>
             </li>
             <li className="flex gap-3">

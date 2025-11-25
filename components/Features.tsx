@@ -8,7 +8,7 @@ export function Features() {
     {
       icon: Shield,
       title: 'Military-Grade Encryption',
-      description: 'AES-256-GCM encryption happens in your browser before upload. Your keys never touch our servers.',
+      description: 'Bank-level encryption happens in your browser before upload. Your keys never touch our servers.',
     },
     {
       icon: Lock,

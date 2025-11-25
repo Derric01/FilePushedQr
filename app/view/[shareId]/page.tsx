@@ -254,7 +254,7 @@ export default function ViewPage() {
                     {(parseInt(fileInfo?.fileSize || '0') / 1024 / 1024).toFixed(2)} MB
                   </span>
                   <span className="px-5 py-2 glass-dark border border-cyan-500/30 text-cyan-400 rounded-xl text-sm font-bold uppercase tracking-wide">
-                    AES-256
+                    Encrypted
                   </span>
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function ViewPage() {
                   <div className="flex-1 text-left">
                     <h3 className="font-bold text-sm text-white mb-2 uppercase tracking-wide">Security Guaranteed</h3>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      File encrypted with AES-256-GCM. Decryption happens <strong className="text-cyan-400">locally in your browser</strong>. 
+                      File encrypted with military-grade encryption. Decryption happens <strong className="text-cyan-400">locally in your browser</strong>. 
                       The server never has access to your unencrypted data.
                     </p>
                   </div>

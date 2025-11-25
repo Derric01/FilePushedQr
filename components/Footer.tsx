@@ -38,7 +38,7 @@ export function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-center gap-2 text-slate-300">
                 <Shield className="h-4 w-4 text-cyan-400" />
-                <span>AES-256-GCM Encryption</span>
+                <span>Military-Grade Encryption</span>
               </div>
               <div className="flex items-center justify-center gap-2 text-slate-300">
                 <Lock className="h-4 w-4 text-cyan-400" />
@@ -76,7 +76,7 @@ export function Footer() {
             <Heart className="inline h-4 w-4 text-cyan-400 fill-cyan-400" /> for privacy.
           </p>
           <p className="text-xs text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            All files are encrypted <strong className="text-cyan-400">client-side</strong> using AES-256-GCM before upload. 
+            All files are encrypted <strong className="text-cyan-400">client-side</strong> with military-grade encryption before upload. 
             We employ zero-knowledge architecture - your encryption keys <strong className="text-cyan-400">never</strong> reach our servers.
             Your privacy is our priority.
           </p>
