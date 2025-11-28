@@ -20,7 +20,6 @@ import {
 import { UploadResult } from './UploadResult';
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
-const MAX_EXPIRY_DAYS = 5;
 
 export function FileUploader() {
   const [files, setFiles] = useState<File[]>([]);
