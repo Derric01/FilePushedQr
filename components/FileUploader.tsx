@@ -22,7 +22,7 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 const MAX_EXPIRY_DAYS = 5;
 
 export function FileUploader() {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadResult, setUploadResult] = useState<any>(null);
@@ -40,31 +40,35 @@ export function FileUploader() {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        toast({
-          title: 'File too large',
-          description: 'Maximum file size is 500MB',
-          variant: 'destructive',
-        });
-        return;
-      }
+      // Filter out files that are too large
+      const validFiles = acceptedFiles.filter(file => {
+        if (file.size > MAX_FILE_SIZE) {
+          toast({
+            title: `${file.name} too large`,
+            description: 'Maximum file size is 500MB per file',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        return true;
+      });
 
-      setFile(selectedFile);
-      setUploadResult(null);
+      if (validFiles.length > 0) {
+        setFiles(prev => [...prev, ...validFiles]);
+        setUploadResult(null);
+      }
     }
   }, [toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    multiple: false,
+    multiple: true,
     disabled: uploading,
   });
 
   const handleUpload = async () => {
-    // Convert text to file if in text mode
-    let fileToUpload = file;
+    // Get files to upload
+    let filesToUpload = files;
     
     if (mode === 'text') {
       if (!textContent.trim()) {
@@ -77,10 +81,10 @@ export function FileUploader() {
       }
       
       const blob = new Blob([textContent], { type: 'text/plain' });
-      fileToUpload = new File([blob], 'shared-text.txt', { type: 'text/plain' });
+      filesToUpload = [new File([blob], 'shared-text.txt', { type: 'text/plain' })];
     }
     
-    if (!fileToUpload) return;
+    if (filesToUpload.length === 0) return;
 
     if (passwordProtected && !password) {
       toast({
@@ -95,66 +99,72 @@ export function FileUploader() {
     setProgress(10);
 
     try {
-      // Step 1: Generate encryption key
-      const encryptionKey = await generateEncryptionKey();
-      const keyString = await exportKey(encryptionKey);
-      setProgress(20);
-
-      // Step 2: Encrypt file client-side
-      toast({
-        title: 'Encrypting file...',
-        description: 'Your file is being encrypted locally',
-      });
-
-      const { encryptedData, iv } = await encryptFile(fileToUpload, encryptionKey);
-      const combined = combineIVAndData(iv, encryptedData);
-      setProgress(50);
-
-      // Step 3: Upload to backend
-      toast({
-        title: 'Uploading...',
-        description: 'Sending encrypted data to server',
-      });
-
-      const formData = new FormData();
-      formData.append('file', new Blob([combined]), fileToUpload.name);
-      formData.append('fileName', fileToUpload.name);
-      formData.append('fileType', fileToUpload.type || 'application/octet-stream');
-      formData.append('fileSize', fileToUpload.size.toString());
-      formData.append('expiresIn', (expiryHours * 60).toString());
+      const uploadResults = [];
       
-      if (passwordProtected && password) {
-        formData.append('password', password);
+      // Upload each file
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const fileToUpload = filesToUpload[i];
+        
+        toast({
+          title: `Processing ${i + 1}/${filesToUpload.length}`,
+          description: `Encrypting ${fileToUpload.name}...`,
+        });
+
+        // Step 1: Generate encryption key for this file
+        const encryptionKey = await generateEncryptionKey();
+        const keyString = await exportKey(encryptionKey);
+
+        // Step 2: Encrypt file client-side
+        const { encryptedData, iv } = await encryptFile(fileToUpload, encryptionKey);
+        const combined = combineIVAndData(iv, encryptedData);
+        
+        setProgress(30 + (i / filesToUpload.length) * 40);
+
+        // Step 3: Upload to backend
+        const formData = new FormData();
+        formData.append('file', new Blob([combined]), fileToUpload.name);
+        formData.append('fileName', fileToUpload.name);
+        formData.append('fileType', fileToUpload.type || 'application/octet-stream');
+        formData.append('fileSize', fileToUpload.size.toString());
+        formData.append('expiresIn', (expiryHours * 60).toString());
+        
+        if (passwordProtected && password) {
+          formData.append('password', password);
+        }
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed for ${fileToUpload.name}`);
+        }
+
+        const result = await response.json();
+        
+        // Build share URL with encryption key
+        const shareUrl = `${window.location.origin}/view/${result.shareId}#key=${keyString}`;
+        
+        uploadResults.push({
+          ...result,
+          shareUrl,
+          encryptionKey: keyString,
+          fileName: fileToUpload.name,
+        });
+        
+        setProgress(70 + ((i + 1) / filesToUpload.length) * 30);
       }
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const result = await response.json();
-      setProgress(100);
-
-      // Step 4: Build share URL with encryption key
-      const shareUrl = `${window.location.origin}/view/${result.shareId}#key=${keyString}`;
-
-      setUploadResult({
-        ...result,
-        shareUrl,
-        encryptionKey: keyString,
-      });
+      setUploadResult(uploadResults.length === 1 ? uploadResults[0] : { multiple: true, files: uploadResults });
 
       toast({
         title: 'Upload successful!',
-        description: 'Your file is ready to share',
+        description: `${uploadResults.length} file${uploadResults.length > 1 ? 's' : ''} ready to share`,
       });
 
       // Reset form
-      setFile(null);
+      setFiles([]);
       setTextContent('');
       setPassword('');
     } catch (error) {
@@ -188,15 +198,15 @@ export function FileUploader() {
         <div className="flex gap-2 mb-6">
           <Button
             variant={mode === 'file' ? 'default' : 'outline'}
-            onClick={() => { setMode('file'); setTextContent(''); setFile(null); }}
+            onClick={() => { setMode('file'); setTextContent(''); setFiles([]); }}
             className={`flex-1 min-h-[44px] ${ mode === 'file' ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400'}`}
           >
             <FileIcon className="mr-2 h-4 w-4" />
-            Upload File
+            Upload Files
           </Button>
           <Button
             variant={mode === 'text' ? 'default' : 'outline'}
-            onClick={() => { setMode('text'); setFile(null); }}
+            onClick={() => { setMode('text'); setFiles([]); }}
             className={`flex-1 min-h-[44px] ${mode === 'text' ? 'glass-dark neon-border bg-cyan-500/20 text-cyan-300' : 'glass-dark border-slate-600 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400'}`}
           >
             <Upload className="mr-2 h-4 w-4" />
@@ -211,39 +221,37 @@ export function FileUploader() {
             className={`group relative border-2 border-dashed rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 min-h-[200px] sm:min-h-[250px] flex items-center justify-center
               ${isDragActive ? 'border-cyan-400 bg-cyan-500/10 neon-border scale-[1.02]' : 'border-slate-600 hover:border-cyan-500/50'}
               ${uploading ? 'pointer-events-none opacity-50' : ''}
-              ${file ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
+              ${files.length > 0 ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
           >
             <input {...getInputProps()} />
           
-          {file ? (
-            <div className="space-y-4 sm:space-y-6 animate-fade-in w-full">
-              <div className="relative inline-block">
-                <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-2xl animate-pulse" />
-                <div className="relative p-4 sm:p-6 glass-dark rounded-full border-2 border-cyan-500/30">
-                  <FileIcon className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-cyan-400" />
+          {files.length > 0 ? (
+            <div className="space-y-4 w-full max-h-[400px] overflow-y-auto">
+              {files.map((file, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-3 glass-dark rounded-xl border border-slate-700 hover:border-cyan-500/50 transition-all">
+                  <FileIcon className="h-8 w-8 text-cyan-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white text-sm truncate">{file.name}</p>
+                    <div className="flex gap-2 text-xs">
+                      <span className="text-cyan-400 font-mono">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                      <span className="text-slate-400 truncate">{file.type || 'Unknown'}</span>
+                    </div>
+                  </div>
+                  {!uploading && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); setFiles(files.filter((_, i) => i !== idx)); }}
+                      className="border-red-500/50 text-red-400 hover:bg-red-500/10 flex-shrink-0"
+                    >
+                      ✕
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <div className="px-2">
-                <p className="font-black text-lg sm:text-2xl text-white mb-2 break-all">{file.name}</p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm">
-                  <span className="px-2 sm:px-3 py-1 glass-dark rounded-lg text-cyan-400 font-mono">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </span>
-                  <span className="px-2 sm:px-3 py-1 glass-dark rounded-lg text-slate-400 font-mono truncate max-w-[200px]">
-                    {file.type || 'Unknown'}
-                  </span>
-                </div>
-              </div>
-              {!uploading && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 min-h-[44px]"
-                >
-                  Remove File
-                </Button>
-              )}
+              ))}
+              <p className="text-sm text-cyan-400 font-mono text-center">
+                {files.length} file{files.length !== 1 ? 's' : ''} selected
+              </p>
             </div>
           ) : (
             <div className="space-y-4 sm:space-y-6 w-full">
@@ -286,7 +294,7 @@ export function FileUploader() {
         )}
 
       {/* Upload Options */}
-      {((file && mode === 'file') || (textContent && mode === 'text')) && !uploading && (
+      {((files.length > 0 && mode === 'file') || (textContent && mode === 'text')) && !uploading && (
         <div className="mt-6 sm:mt-8 space-y-5 sm:space-y-6">
           {/* Expiry */}
           <div className="space-y-3">

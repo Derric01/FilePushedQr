@@ -11,11 +11,20 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface UploadResultProps {
   result: {
-    shareUrl: string;
-    manageUrl: string;
-    ownerToken: string;
-    expiresAt: string;
-    shareId: string;
+    shareUrl?: string;
+    manageUrl?: string;
+    ownerToken?: string;
+    expiresAt?: string;
+    shareId?: string;
+    multiple?: boolean;
+    files?: Array<{
+      shareUrl: string;
+      manageUrl: string;
+      ownerToken: string;
+      expiresAt: string;
+      shareId: string;
+      fileName: string;
+    }>;
   };
   onReset: () => void;
 }
@@ -23,6 +32,39 @@ interface UploadResultProps {
 export function UploadResult({ result, onReset }: UploadResultProps) {
   const [showOwnerToken, setShowOwnerToken] = useState(false);
   const { toast } = useToast();
+
+  // Handle multiple files
+  if (result.multiple && result.files) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <Card className="relative overflow-hidden glass-dark border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(0,180,255,0.2)]">
+          <div className="absolute inset-0 chain-bg opacity-10" />
+          <div className="relative p-8">
+            <h2 className="text-2xl font-black text-white mb-6 text-center">
+              {result.files.length} FILES UPLOADED SUCCESSFULLY! 🎉
+            </h2>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {result.files.map((file, idx) => (
+                <div key={idx} className="p-4 glass-dark border border-cyan-500/30 rounded-xl space-y-3">
+                  <p className="font-bold text-cyan-400 truncate">{file.fileName}</p>
+                  <div className="flex gap-2">
+                    <Input value={file.shareUrl} readOnly className="flex-1 glass-dark border-slate-600 text-white text-sm" />
+                    <Button size="sm" onClick={() => { navigator.clipboard.writeText(file.shareUrl); toast({ title: 'Copied!' }); }} className="glass-dark">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button onClick={onReset} className="w-full mt-6 glass-dark neon-border">
+              <Upload className="mr-2 h-4 w-4" />
+              UPLOAD MORE FILES
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -55,6 +97,11 @@ export function UploadResult({ result, onReset }: UploadResultProps) {
 
     img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
   };
+
+  // Handle single file - ensure required properties exist
+  if (!result.shareUrl || !result.expiresAt || !result.manageUrl) {
+    return null;
+  }
 
   const expiryDate = new Date(result.expiresAt);
   const timeRemaining = Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60));
@@ -92,7 +139,7 @@ export function UploadResult({ result, onReset }: UploadResultProps) {
                   <div className="bg-white p-4 rounded-lg">
                     <QRCodeSVG
                       id="qr-code"
-                      value={result.shareUrl}
+                      value={result.shareUrl!}
                       size={256}
                       level="H"
                       includeMargin
@@ -118,20 +165,20 @@ export function UploadResult({ result, onReset }: UploadResultProps) {
             <Label className="text-sm font-bold text-white uppercase tracking-wide">Share Link</Label>
             <div className="flex gap-2">
               <Input
-                value={result.shareUrl}
+                value={result.shareUrl!}
                 readOnly
                 className="glass-dark border-2 border-slate-600 text-cyan-300 font-mono text-sm"
               />
               <Button
                 size="icon"
-                onClick={() => copyToClipboard(result.shareUrl, 'Share link')}
+                onClick={() => copyToClipboard(result.shareUrl!, 'Share link')}
                 className="glass-dark border border-cyan-500/50 text-cyan-400 hover:border-cyan-400"
               >
                 <Copy className="h-4 w-4" />
               </Button>
               <Button
                 size="icon"
-                onClick={() => window.open(result.shareUrl, '_blank')}
+                onClick={() => window.open(result.shareUrl!, '_blank')}
                 className="glass-dark border border-cyan-500/50 text-cyan-400 hover:border-cyan-400"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -178,13 +225,13 @@ export function UploadResult({ result, onReset }: UploadResultProps) {
                 </p>
                 <div className="flex gap-2">
                   <Input
-                    value={result.manageUrl}
+                    value={result.manageUrl!}
                     readOnly
                     className="glass-dark border-2 border-slate-600 text-cyan-300 font-mono text-xs"
                   />
                   <Button
                     size="icon"
-                    onClick={() => copyToClipboard(result.manageUrl, 'Management link')}
+                    onClick={() => copyToClipboard(result.manageUrl!, 'Management link')}
                     className="glass-dark border border-cyan-500/50 text-cyan-400 hover:border-cyan-400"
                   >
                     <Copy className="h-4 w-4" />

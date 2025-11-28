@@ -64,7 +64,7 @@ export default function Home() {
             <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-6 sm:pt-12 px-2">
               {[
                 { icon: Zap, label: "500MB", sublabel: "Max Transfer", color: "cyan" },
-                { icon: Lock, label: "AES-256", sublabel: "Encryption", color: "blue" },
+                { icon: Lock, label: "Encrypted", sublabel: "Secure", color: "blue" },
                 { icon: Clock, label: "7 Days", sublabel: "Retention", color: "indigo" }
               ].map((stat, i) => (
                 <div key={i} className={`group relative animate-fade-in ${i === 1 ? 'animation-delay-1000' : i === 2 ? 'animation-delay-2000' : ''}`}>
