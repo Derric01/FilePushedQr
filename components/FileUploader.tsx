@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileIcon, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,14 @@ export function FileUploader() {
     multiple: true,
     disabled: uploading,
   });
+
+  // Additional handler for programmatic file selection (e.g., Playwright tests)
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      onDrop(Array.from(selectedFiles));
+    }
+  };
 
   const handleUpload = async () => {
     // Get files to upload
@@ -223,7 +231,7 @@ export function FileUploader() {
               ${uploading ? 'pointer-events-none opacity-50' : ''}
               ${files.length > 0 ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/5 to-blue-500/5' : ''}`}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} onChange={handleFileInputChange} />
           
           {files.length > 0 ? (
             <div className="space-y-4 w-full max-h-[400px] overflow-y-auto">
