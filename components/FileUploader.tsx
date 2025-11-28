@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileIcon, Loader2, Lock } from 'lucide-react';
+import JSZip from 'jszip';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -107,68 +108,107 @@ export function FileUploader() {
     setProgress(10);
 
     try {
-      const uploadResults = [];
+      let fileToUpload: File;
+      let finalFileName: string;
+      let finalFileType: string;
       
-      // Upload each file
-      for (let i = 0; i < filesToUpload.length; i++) {
-        const fileToUpload = filesToUpload[i];
+      // If multiple files, create a ZIP bundle
+      if (filesToUpload.length > 1) {
+        toast({
+          title: `Bundling ${filesToUpload.length} files`,
+          description: 'Creating ZIP archive...',
+        });
+        
+        const zip = new JSZip();
+        
+        // Add each file to the ZIP
+        for (const file of filesToUpload) {
+          zip.file(file.name, file);
+        }
+        
+        setProgress(20);
+        
+        // Generate the ZIP blob
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        fileToUpload = new File([zipBlob], 'files.zip', { type: 'application/zip' });
+        finalFileName = `${filesToUpload.length}_files.zip`;
+        finalFileType = 'application/zip';
         
         toast({
-          title: `Processing ${i + 1}/${filesToUpload.length}`,
-          description: `Encrypting ${fileToUpload.name}...`,
+          title: 'ZIP created',
+          description: `Bundled ${filesToUpload.length} files into one archive`,
         });
+      } else {
+        // Single file - no ZIP needed
+        fileToUpload = filesToUpload[0];
+        finalFileName = fileToUpload.name;
+        finalFileType = fileToUpload.type || 'application/octet-stream';
+      }
+      
+      setProgress(30);
+      
+      toast({
+        title: 'Encrypting',
+        description: 'Securing your file(s)...',
+      });
 
-        // Step 1: Generate encryption key for this file
-        const encryptionKey = await generateEncryptionKey();
-        const keyString = await exportKey(encryptionKey);
+      // Step 1: Generate encryption key
+      const encryptionKey = await generateEncryptionKey();
+      const keyString = await exportKey(encryptionKey);
 
-        // Step 2: Encrypt file client-side
-        const { encryptedData, iv } = await encryptFile(fileToUpload, encryptionKey);
-        const combined = combineIVAndData(iv, encryptedData);
-        
-        setProgress(30 + (i / filesToUpload.length) * 40);
+      // Step 2: Encrypt file client-side
+      const { encryptedData, iv } = await encryptFile(fileToUpload, encryptionKey);
+      const combined = combineIVAndData(iv, encryptedData);
+      
+      setProgress(60);
 
-        // Step 3: Upload to backend
-        const formData = new FormData();
-        formData.append('file', new Blob([combined]), fileToUpload.name);
-        formData.append('fileName', fileToUpload.name);
-        formData.append('fileType', fileToUpload.type || 'application/octet-stream');
-        formData.append('fileSize', fileToUpload.size.toString());
-        formData.append('expiresIn', (expiryHours * 60).toString());
-        
-        if (passwordProtected && password) {
-          formData.append('password', password);
-        }
+      // Step 3: Upload to backend
+      const formData = new FormData();
+      formData.append('file', new Blob([combined]), finalFileName);
+      formData.append('fileName', finalFileName);
+      formData.append('fileType', finalFileType);
+      formData.append('fileSize', fileToUpload.size.toString());
+      formData.append('expiresIn', (expiryHours * 60).toString());
+      
+      if (passwordProtected && password) {
+        formData.append('password', password);
+      }
+      
+      toast({
+        title: 'Uploading',
+        description: 'Sending to secure server...',
+      });
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-        if (!response.ok) {
-          throw new Error(`Upload failed for ${fileToUpload.name}`);
-        }
-
-        const result = await response.json();
-        
-        // Build share URL with encryption key
-        const shareUrl = `${window.location.origin}/view/${result.shareId}#key=${keyString}`;
-        
-        uploadResults.push({
-          ...result,
-          shareUrl,
-          encryptionKey: keyString,
-          fileName: fileToUpload.name,
-        });
-        
-        setProgress(70 + ((i + 1) / filesToUpload.length) * 30);
+      if (!response.ok) {
+        throw new Error('Upload failed');
       }
 
-      setUploadResult(uploadResults.length === 1 ? uploadResults[0] : { multiple: true, files: uploadResults });
+      const result = await response.json();
+      
+      setProgress(90);
+      
+      // Build share URL with encryption key
+      const shareUrl = `${window.location.origin}/view/${result.shareId}#key=${encodeURIComponent(keyString)}`;
+      
+      setUploadResult({
+        ...result,
+        shareUrl,
+        encryptionKey: keyString,
+        fileName: finalFileName,
+      });
+      
+      setProgress(100);
 
       toast({
         title: 'Upload successful!',
-        description: `${uploadResults.length} file${uploadResults.length > 1 ? 's' : ''} ready to share`,
+        description: filesToUpload.length > 1 
+          ? `${filesToUpload.length} files bundled and encrypted` 
+          : 'File uploaded and encrypted',
       });
 
       // Reset form
