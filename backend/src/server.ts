@@ -31,18 +31,22 @@ const upload = multer({
 });
 
 // Security middleware - relaxed for Next.js
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: isDevelopment 
+        ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] 
+        : ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
+      mediaSrc: ["'self'", "blob:"],
       frameSrc: ["'none'"],
     },
   },

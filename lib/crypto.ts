@@ -21,26 +21,67 @@ export async function generateEncryptionKey(): Promise<CryptoKey> {
 }
 
 /**
- * Export key to base64 string (for URL fragment)
+ * Convert array buffer to URL-safe base64 string
  */
-export async function exportKey(key: CryptoKey): Promise<string> {
-  const exported = await crypto.subtle.exportKey('raw', key);
-  const exportedKeyBuffer = new Uint8Array(exported);
-  return btoa(String.fromCharCode(...exportedKeyBuffer));
+function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  // Convert to base64 and make URL-safe
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
 }
 
 /**
- * Import key from base64 string
+ * Convert URL-safe base64 string to array buffer
+ */
+function base64UrlToArrayBuffer(base64Url: string): ArrayBuffer {
+  // Convert URL-safe base64 back to regular base64
+  let base64 = base64Url
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  
+  // Add padding if needed
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+/**
+ * Export key to URL-safe base64 string (for URL fragment)
+ */
+export async function exportKey(key: CryptoKey): Promise<string> {
+  const exported = await crypto.subtle.exportKey('raw', key);
+  return arrayBufferToBase64Url(exported);
+}
+
+/**
+ * Import key from URL-safe base64 string
  */
 export async function importKey(keyString: string): Promise<CryptoKey> {
-  const keyData = Uint8Array.from(atob(keyString), (c) => c.charCodeAt(0));
-  return await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: ALGORITHM, length: KEY_LENGTH },
-    true,
-    ['encrypt', 'decrypt']
-  );
+  try {
+    const keyData = base64UrlToArrayBuffer(keyString);
+    return await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: ALGORITHM, length: KEY_LENGTH },
+      true,
+      ['encrypt', 'decrypt']
+    );
+  } catch (error) {
+    throw new Error('Invalid encryption key format. The link may be corrupted.');
+  }
 }
 
 /**
